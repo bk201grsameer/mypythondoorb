@@ -1,37 +1,18 @@
-
+import subprocess
 import socket
 import threading
 import json
 import os
 import sys
+from Logs.LogsHandler import log_Handler
+
+# logs
+logterminal = log_Handler()
 
 
 def print_thread_count():
     thread_count = threading.active_count()
-    print(f"[+] Number of active threads: {thread_count-1}")
-
-
-def clear_line(dir):
-    sys.stdout.write("\033[2K")  # Clear current line
-    if dir == 0:
-        sys.stdout.write("\033[1G")  # Move cursor to the beginning of the line
-    else:
-        sys.stdout.write("\033[999C")  # Move cursor to the end of the line
-    sys.stdout.flush()
-
-
-def move_cursor(dx, dy):
-    if dx > 0:
-        sys.stdout.write("\033[%dC" % dx)  # Move cursor right by dx columns
-    elif dx < 0:
-        sys.stdout.write("\033[%dD" % (-dx))  # Move cursor left by dx columns
-
-    if dy > 0:
-        sys.stdout.write("\033[%dB" % dy)  # Move cursor down by dy rows
-    elif dy < 0:
-        sys.stdout.write("\033[%dA" % (-dy))  # Move cursor up by dy rows
-
-    sys.stdout.flush()
+    logterminal.write(f"[+] Number of active threads: {thread_count-1}")
 
 
 class Server:
@@ -62,13 +43,12 @@ class Server:
 
     def start(self):
         # LOGIC FOR THE SERVER
-        print(f"[+] Server listening on {self.serverIP}:{self.serverPORT}")
+        logterminal.write(f"[+] Server listening on {self.serverIP}:{self.serverPORT}")
         while True:
             try:
-                print()
-                print(f"[+] WAITING FOR INCOMING REQUESTS")
+                logterminal.write(f"[+] WAITING FOR INCOMING REQUESTS")
                 client, address = self.server.accept()
-                print(f"[+] CLIENT CONNECTED FROM {address[0]}:{address[1]}")
+                logterminal.write(f"[+] CLIENT CONNECTED FROM {address[0]}:{address[1]}")
                 print_thread_count()
                 # append the client to the list of clients only once from the same ip
                 if self.ip_to_socket_map.get(address[0]) == None:
