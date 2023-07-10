@@ -4,6 +4,7 @@ import threading
 import json
 import os
 import sys
+
 # Get the absolute path of the project's root directory
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -11,9 +12,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 
-
 from Logs.LogsHandler import log_Handler
-from Handle_Communication.ServerCommunication import Server_Communication
 
 # logs
 logterminal = log_Handler()
@@ -26,21 +25,20 @@ def print_thread_count():
 
 class Server:
     def __init__(self, IP, PORT) -> None:
-        # INITIALIZE THE SOCKETS
+        # Initialize the sockets
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((IP, PORT))
         self.server.listen(10)
         self.serverIP = IP
         self.serverPORT = PORT
-        # LIST OF CLIENTS
+        # List of clients
         self.ip_to_socket_map = {}
         self.control_Thread = None
         self.current_Client = None
         self.stop_event = threading.Event()
         self.byt = 1024 * 10
-        # server communication handler
-        self.serverCommunication = Server_Communication()
 
+    # MUJI HANDLE CLIENT
     def handle_Clients(self):
         # LOGIC TO HANDLE CLIENTS
         if self.current_Client == None:

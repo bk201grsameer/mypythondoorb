@@ -2,13 +2,19 @@ import socket
 from Handle_Communication.Communication import HandleCommunication
 from Handle_Communication.Send_Message import *
 
+
 class Server_Communication(HandleCommunication, MessageSender_Server):
-    def __init__(self, logterminal, ip_to_socket_map) -> None:
+    def __init__(
+        self, logterminal, ip_to_socket_map, control_Thread, current_Client
+    ) -> None:
         super().__init__()
         self.logterminal = logterminal
         self.ip_to_socket_map = ip_to_socket_map
-        pass
-    # send message
+        self.control_Thread = control_Thread
+        self.current_Client = current_Client
+        
+
+    # INTERFACE IMPLEMENTATION
     def send_Message(self, clientsocket: socket.socket, command, current_clientip):
         try:
             clientsocket.send(self.generate_Message(command))
