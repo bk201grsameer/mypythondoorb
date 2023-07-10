@@ -1,9 +1,14 @@
-import sys
-import os
+class A:
+    def __init__(self) -> None:
+        self.a = "a"
 
-# Get the absolute path of the project's root directory
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_root)
 
-print(project_root)
-# Add the project root to the Python module search path
+class B:
+    def __init__(self) -> None:
+        self.b = "b"
+
+
+class s(A, B):
+    def __init__(self) -> None:
+        super().__init__()
+    def 

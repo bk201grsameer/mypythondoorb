@@ -56,6 +56,8 @@ def main():
         while True:
             msg = receive_Message(sock)
             print(msg)
+            if msg == "quit":
+                exit()
     except Exception as ex:
         print(f"[-] Error :{str(ex)}")
         exit()

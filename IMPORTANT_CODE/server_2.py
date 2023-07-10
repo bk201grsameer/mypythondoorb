@@ -16,7 +16,6 @@ from Logs.LogsHandler import log_Handler
 
 # logs
 logterminal = log_Handler()
-exit_flag = False
 
 
 def print_thread_count():
@@ -41,7 +40,6 @@ class Server:
 
     # MUJI HANDLE CLIENT
     def handle_Clients(self):
-        global exit_flag
         # LOGIC TO HANDLE CLIENTS
         if self.current_Client == None:
             return
@@ -59,35 +57,11 @@ class Server:
 
                 # logic to handle command
                 print(command)
-                # DISPLAY SESSIONS
                 if command.lower() == "show session":
                     # show avaiable sessions
-                    self.show_Sessions()
+                    for ip in self.ip_to_socket_map:
+                        print(self.ip_to_socket_map[ip])
                     continue
-                # CLEAR THE TERMINAL
-                if command.lower() == "clear":
-                    os.system("powershell clear")
-                    continue
-
-                # quit the whole application
-                if command.lower() == "quit":
-                    self.broad_Cast(command.lower())
-                    # exit the program
-                    print(f"[+] EXITING THE THREAD")
-                    exit_flag = True
-                    break
-                # this check of any other thread existence has exit flag
-                if exit_flag == True:
-                    break
-
-                # switch session
-                if (
-                    command.lower() == "switch session"
-                    or command.lower() == "switch session"
-                ):
-                    self.switch_Session()
-                    continue
-
                 self.send_Message(
                     self.ip_to_socket_map[self.current_Client],
                     command,
@@ -99,40 +73,8 @@ class Server:
                     f"[+] SOMETHING WENT WRONG IN HANDLE CLIENT COMMUNICATION {str(ex)}"
                 )
 
-    # broadcast
-    def broad_Cast(self, msg):
-        for ip in self.ip_to_socket_map:
-            try:
-                self.send_Message(self.ip_to_socket_map[ip], msg, ip)
-            except Exception as ex:
-                logterminal.write(f"[-] Broadcase Error : {str(ex)}")
-
-    # get all the sessions
-    def show_Sessions(self):
-        i: int = 0
-        print(f"[+]ACTIVE SESSIONS ")
-        for ip in self.ip_to_socket_map:
-            print(f"[+]{i+1} : {ip}")
-            i += 1
-
-    # switch session
-    def switch_Session(self):
-        self.show_Sessions()
-        try:
-            ip = input("[+] Please Enter the IP or -1 to exit:")
-            if ip == "":
-                logterminal.write(f"[+] PLEASE RETRY LATER AGAIN")
-                return
-            if ip == "-1":
-                logterminal.write(f"[+] SWITCH SESSION CANCELLED")
-                return
-            if self.ip_to_socket_map.get(ip) == None:
-                logterminal.write(f"[+] THE IP IS NOT ACTIVE")
-                return
-            self.current_Client = ip.strip()
-        except Exception as ex:
-            logterminal.write(f"[+] ERROR WHILE SWITCHING SESSION : {str(ex)}")
-
+    
+    
     # message Generator
     def generate_Message(self, msg):
         try:
@@ -179,12 +121,9 @@ class Server:
     def start(self):
         # LOGIC FOR THE SERVER
         logterminal.write(f"[+] Server listening on {self.serverIP}:{self.serverPORT}")
-        global exit_flag
         while True:
-            self.server.settimeout(1)
             try:
                 logterminal.write(f"[+] WAITING FOR INCOMING REQUESTS")
-
                 client, address = self.server.accept()
                 logterminal.write(
                     f"[+] CLIENT CONNECTED FROM {address[0]}:{address[1]}"
@@ -205,13 +144,7 @@ class Server:
                 else:
                     # logic to handle another client joined
                     pass
-            except socket.timeout:
-                # exit the main thread
-                if exit_flag == True:
-                    # Wait for all the threads to complete the execution
-                    self.control_Thread.join()
-                    print("[+]Exiting the program")
-                    sys.exit()
+
             except Exception as ex:
                 print(f"[-] SOMETHING WENT WRONG IN START _SERVER {str(ex)}")
                 print(f"[-] CLOSING DOWN THE SERVER")
