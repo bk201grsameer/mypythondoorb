@@ -24,10 +24,3 @@ class TermialExecutor:
             return result
         except:
             print(f"[+] SOMETHING WENT WRONG")
-
-
-terminal = TermialExecutor()
-
-while True:
-    command = input("ENTER COMMAND:")
-    print(terminal.execute(command))
