@@ -1,7 +1,7 @@
 import subprocess
 
 
-def create_New_Terminal():
+def create_new_terminal():
     terminal = subprocess.Popen(
         ["powershell", "-NoExit"],
         stdin=subprocess.PIPE,
@@ -11,16 +11,19 @@ def create_New_Terminal():
 
 
 # Create a new terminal
-terminal = create_New_Terminal()
+terminal = create_new_terminal()
 
 while True:
-    if terminal == None or terminal.poll() is not None:
+    if terminal.poll() is not None:
         print(f"[-] Terminal is closed")
-        terminal = create_New_Terminal()
+        terminal = create_new_terminal()
+
     msg = input("Enter Message:> ")
-    if terminal == None or terminal.poll() is not None:
+
+    if terminal.poll() is not None:
         print(f"[-] Terminal is closed")
-        terminal = create_New_Terminal()
+        terminal = create_new_terminal()
+
     print(msg)
 
     if msg == "quit":
@@ -30,5 +33,5 @@ while True:
         break
 
     # Print the user-entered message in the terminal
-    terminal.stdin.write(f'Write-Host "{msg}"\n'.encode())
+    terminal.stdin.write(f'Write-Host -NoNewline "{msg}"\n'.encode())
     terminal.stdin.flush()

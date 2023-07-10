@@ -48,7 +48,9 @@ class Server:
             try:
                 logterminal.write(f"[+] WAITING FOR INCOMING REQUESTS")
                 client, address = self.server.accept()
-                logterminal.write(f"[+] CLIENT CONNECTED FROM {address[0]}:{address[1]}")
+                logterminal.write(
+                    f"[+] CLIENT CONNECTED FROM {address[0]}:{address[1]}"
+                )
                 print_thread_count()
                 # append the client to the list of clients only once from the same ip
                 if self.ip_to_socket_map.get(address[0]) == None:
@@ -56,7 +58,9 @@ class Server:
 
                 if self.current_Client == None and self.control_Thread == None:
                     # logic to control the clients
-                    print(f"[+] Starting a New Thread to control the clients")
+                    logterminal.write(
+                        f"[+] Starting a New Thread to control the clients"
+                    )
                     self.current_Client = address[0]
                     thread = threading.Thread(target=self.handle_Clients)
                     thread.start()
@@ -66,6 +70,8 @@ class Server:
 
             except Exception as ex:
                 print(f"[-] SOMETHING WENT WRONG IN START _SERVER {str(ex)}")
+                print(f"[-] CLOSING DOWN THE SERVER")
+                exit()
 
 
 def main():
