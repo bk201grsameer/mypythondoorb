@@ -4,16 +4,7 @@ import threading
 import json
 import os
 import sys
-# Get the absolute path of the project's root directory
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Add the project root to the Python module search path
-sys.path.append(project_root)
-
-
-
 from Logs.LogsHandler import log_Handler
-from Handle_Communication.ServerCommunication import Server_Communication
 
 # logs
 logterminal = log_Handler()
@@ -38,8 +29,6 @@ class Server:
         self.current_Client = None
         self.stop_event = threading.Event()
         self.byt = 1024 * 10
-        # server communication handler
-        self.serverCommunication = Server_Communication()
 
     def handle_Clients(self):
         # LOGIC TO HANDLE CLIENTS

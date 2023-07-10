@@ -4,6 +4,7 @@ import socket
 import time
 import os
 import subprocess
+from handleCommunication import HandleCommunication
 
 
 def main():
@@ -14,11 +15,16 @@ def main():
     # EXTRACT IP_ADDRESS
     IP_ADDRESS = sys.argv[1]
     PORT = int(sys.argv[2])
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((IP_ADDRESS, PORT))
-    while True:
-        # msg = sock.recv(1024 * 10)
-        print(input())
+    communiation_Handler = HandleCommunication()
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((IP_ADDRESS, PORT))
+        while True:
+            msg = communiation_Handler.receive_Message(sock)
+            print(msg)
+    except Exception as ex:
+        print(f"[-] Error :{str(ex)}")
+        exit()
 
 
 if __name__ == "__main__":
