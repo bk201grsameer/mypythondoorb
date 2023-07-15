@@ -63,9 +63,10 @@ def main():
                 try:
                     os.chdir(directory)
                     print("Current directory:", os.getcwd())
+                    send_Message(sock, os.getcwd())
                 except Exception as ex:
                     print("Directory change failed:", str(ex))
-                send_Message(sock, os.getcwd())
+                    send_Message(sock, str(ex))
                 continue
             # EXECUTE THE COMMAND
             result = terminal.execute(command)
