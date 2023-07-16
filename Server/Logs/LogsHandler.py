@@ -11,7 +11,9 @@ class log_Handler:
         if self.terminal == None or self.terminal.poll() is not None:
             self.terminal = self.create_New_Terminal()
         # logic to handle terminal logs
-        self.terminal.stdin.write(f'Write-Host "{msg}"\n'.encode())
+        self.terminal.stdin.write(
+            f'Write-Host "{msg}" -ForegroundColor Green\n'.encode()
+        )
         self.terminal.stdin.flush()
 
     # close terminal

@@ -7,9 +7,8 @@ The first code snippet is using the subprocess.Popen function to open a PowerShe
 
 
 class TermialExecutor:
-    def __init__(self) -> None:
-        pass
-    
+    def __init__(self) -> None:pass
+
     def execute(self, command):
         try:
             if platform.system() == "Windows":
@@ -34,3 +33,4 @@ class TermialExecutor:
             return result
         except Exception as e:
             print(f"[+] SOMETHING WENT WRONG: {str(e)}")
+            return str(e)

