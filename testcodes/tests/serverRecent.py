@@ -12,7 +12,6 @@ sys.path.append(project_root)
 
 
 from Logs.LogsHandler import log_Handler
-
 # logs
 logterminal = log_Handler()
 exit_flag = False
