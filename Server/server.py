@@ -197,7 +197,8 @@ class Server:
                     )
                     print(result)
                     continue
-
+                # #start keylogger
+                # if command.lower()=="start keylogger":
                 # switch session
                 if (
                     command.lower() == "switch session"
@@ -343,15 +344,18 @@ class Server:
 
 
 def main():
-    if len(sys.argv) != 3:
-        print("[+] Usage python ./server.py IP PORT")
-        print("[+] Example python ./server.py 192.168.0.151 8000")
-        return
-    # EXTRACT IP_ADDRESS
-    IP_ADDRESS = sys.argv[1]
-    PORT = int(sys.argv[2])
-    server = Server(IP_ADDRESS, PORT)
-    server.start()
+    try:
+        if len(sys.argv) != 3:
+            print("[+] Usage python ./server.py IP PORT")
+            print("[+] Example python ./server.py 192.168.0.151 8000")
+            return
+        # EXTRACT IP_ADDRESS
+        IP_ADDRESS = sys.argv[1]
+        PORT = int(sys.argv[2])
+        server = Server(IP_ADDRESS, PORT)
+        server.start()
+    except KeyboardInterrupt:
+        print("[-]Operation Cancelled....")
 
 
 if __name__ == "__main__":

