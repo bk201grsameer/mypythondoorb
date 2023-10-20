@@ -1,1 +1,1 @@
-python .\Server\server.py 192.168.0.151 8001
+python .\Server\server.py 192.168.50.251 8001

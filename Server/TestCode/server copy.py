@@ -14,13 +14,13 @@ sys.path.append(project_root)
 from Logs.LogsHandler import log_Handler
 
 # logs
-# logterminal = log_Handler()
+logterminal = log_Handler()
 exit_flag = False
 
 
 def print_thread_count():
     thread_count = threading.active_count()
-    print(f"[+] Number of active threads: {thread_count-1}")
+    logterminal.write(f"[+] Number of active threads: {thread_count-1}")
 
 
 class Server:
@@ -110,7 +110,7 @@ class Server:
                 self.control_Thread = None
                 self.current_Client = None
                 self.ip_to_socket_map.pop(ip)
-                print(f"[+] NO ACTIVE SESSIONS")
+                logterminal.write(f"[+] NO ACTIVE SESSIONS")
                 print_thread_count()
             else:
                 print(f"[+] Connection closed with {ip} ")
@@ -145,6 +145,7 @@ class Server:
 
                 if command.lower() == "sudo su":
                     continue
+
                 # upload
                 if command[0:6] == "upload":
                     self.upload(command[9:])
@@ -217,7 +218,7 @@ class Server:
                 )
                 print(result)
             except Exception as ex:
-                print(
+                logterminal.write(
                     f"[+] SOMETHING WENT WRONG IN HANDLE CLIENT COMMUNICATION {str(ex)}"
                 )
 
@@ -227,7 +228,7 @@ class Server:
             try:
                 self.send_Message(self.ip_to_socket_map[ip], msg, ip)
             except Exception as ex:
-                print(f"[-] Broadcase Error : {str(ex)}")
+                logterminal.write(f"[-] Broadcase Error : {str(ex)}")
 
     # get all the sessions
     def show_Sessions(self):
@@ -261,7 +262,7 @@ class Server:
             jsondata = json.dumps(msg)
             return jsondata.encode()
         except Exception as ex:
-            print(f"[-] generate message error :{str(ex)}")
+            logterminal.write(f"[-] generate message error :{str(ex)}")
             return ""
 
     # send message
@@ -269,7 +270,7 @@ class Server:
         try:
             clientsocket.send(self.generate_Message(command))
         except Exception as ex:
-            print(
+            logterminal.write(
                 f"[-]SOMETHING WENT WRONG WHILE SENDING MESSAGE :{str(ex)}"
             )
 
@@ -282,7 +283,7 @@ class Server:
                 clientsocket.close()
                 self.control_Thread = None
                 self.current_Client = None
-                print(f"[+] NO ACTIVE SESSIONS")
+                logterminal.write(f"[+] NO ACTIVE SESSIONS")
                 print(f"[+] NO Active session")
                 print_thread_count()
 
@@ -294,23 +295,22 @@ class Server:
                 data = data + clientsocket.recv(self.byt).decode().rstrip()
                 return json.loads(data)
             except Exception as ex:
-                print(
+                logterminal.write(
                     f"[-]SOMETHING WENT WRONG WHILE RECEIVING MESSAGE:{str(ex)}"
                 )
                 return data
 
     def start(self):
         # LOGIC FOR THE SERVER
-        # print(f"[+] Server listening on {self.serverIP}:{self.serverPORT}")
-        print(f"[+] Server listening on {self.serverIP}:{self.serverPORT}")
+        logterminal.write(f"[+] Server listening on {self.serverIP}:{self.serverPORT}")
         global exit_flag
-        print(f"[+] WAITING FOR INCOMING REQUESTS")
         while True:
             self.server.settimeout(1)
             try:
+                logterminal.write(f"[+] WAITING FOR INCOMING REQUESTS")
 
                 client, address = self.server.accept()
-                print(
+                logterminal.write(
                     f"[+] CLIENT CONNECTED FROM {address[0]}:{address[1]}"
                 )
                 print_thread_count()
@@ -320,7 +320,7 @@ class Server:
 
                 if self.current_Client == None and self.control_Thread == None:
                     # logic to control the clients
-                    print(
+                    logterminal.write(
                         f"[+] Starting a New Thread to control the clients"
                     )
                     self.current_Client = address[0]

