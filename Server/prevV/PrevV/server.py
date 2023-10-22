@@ -3,7 +3,6 @@ import threading
 import json
 import os
 import sys
-import socket, cv2, pickle, struct
 
 # Get the absolute path of the project's root directory
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,11 +34,9 @@ class Server:
         # List of clients
         self.ip_to_socket_map = {}
         self.control_Thread = None
-        self.stream_Thread = None
         self.current_Client = None
         self.stop_event = threading.Event()
         self.byt = 1024 * 10
-        self.stream_Flag = True
 
     # DOWNLOAD FILE
     def download(self, file_name):
@@ -127,41 +124,9 @@ class Server:
         except Exception as ex:
             print(f"[-]Remove Error :{str(ex)}")
 
-    # get stream
-    def get_Stream(
-        self,
-    ):
-        try:
-            data = b""
-            metadata_size = struct.calcsize("Q")
-            while True:
-                while len(data) < metadata_size:
-                    packet = self.ip_to_socket_map[self.current_Client].recv(4 * 1024)
-                    if not packet:
-                        break
-                    data += packet
-                packed_msg_size = data[:metadata_size]
-                data = data[metadata_size:]
-                msg_size = struct.unpack("Q", packed_msg_size)[0]
-                while len(data) < msg_size:
-                    data += self.ip_to_socket_map[self.current_Client].recv(4 * 1024)
-                frame_data = data[:msg_size]
-                data = data[msg_size:]
-                frame = pickle.loads(frame_data)
-                cv2.imshow("Receiving Video", frame)
-                if cv2.waitKey(1) & (
-                    self.stream_Flag == False
-                ):  # Exit when the 'Esc' key is pressed
-                    print("[+] VIDEO STREAM CLOSED ")
-                    break
-        except Exception as ex:
-            print("[+] something went wrong while video stream ")
-            print(str(ex))
-
     # MUJI HANDLE CLIENT
     def handle_Clients(self):
         global exit_flag
-
         # LOGIC TO HANDLE CLIENTS
         if self.current_Client == None:
             return
@@ -177,22 +142,6 @@ class Server:
                     continue
                 # logic to handle command
                 print(f"[+] Command executed :{command}")
-
-                if command == "quit videostream":
-                    self.send_Message(
-                        self.ip_to_socket_map[self.current_Client],
-                        command,
-                        self.current_Client,
-                    )
-                    if self.stream_Thread != None:
-                        self.stream_Flag = False
-                        self.stream_Thread.join()
-                        self.stream_Thread = None
-                    continue
-
-                if self.stream_Thread != None:
-                    print("[+] Please First Close the running video stream")
-                    continue
 
                 if command.lower() == "sudo su":
                     continue
@@ -232,17 +181,6 @@ class Server:
                     print(f"[+] EXITING THE THREAD")
                     exit_flag = True
                     break
-                # to do
-                if command.lower() == "get video":
-                    self.send_Message(
-                        self.ip_to_socket_map[self.current_Client],
-                        command,
-                        self.current_Client,
-                    )
-                    self.stream_Flag = True
-                    self.stream_Thread = threading.Thread(target=self.get_Stream)
-                    self.stream_Thread.start()
-                    continue
                 # this check of any other thread existence has exit flag
                 if exit_flag == True:
                     break
@@ -331,7 +269,9 @@ class Server:
         try:
             clientsocket.send(self.generate_Message(command))
         except Exception as ex:
-            print(f"[-]SOMETHING WENT WRONG WHILE SENDING MESSAGE :{str(ex)}")
+            print(
+                f"[-]SOMETHING WENT WRONG WHILE SENDING MESSAGE :{str(ex)}"
+            )
 
             # remove the existing client if the communication has failed
             if self.ip_to_socket_map.get(current_clientip) != None:
@@ -354,7 +294,9 @@ class Server:
                 data = data + clientsocket.recv(self.byt).decode().rstrip()
                 return json.loads(data)
             except Exception as ex:
-                print(f"[-]SOMETHING WENT WRONG WHILE RECEIVING MESSAGE:{str(ex)}")
+                print(
+                    f"[-]SOMETHING WENT WRONG WHILE RECEIVING MESSAGE:{str(ex)}"
+                )
                 return data
 
     def start(self):
@@ -366,8 +308,11 @@ class Server:
         while True:
             self.server.settimeout(1)
             try:
+
                 client, address = self.server.accept()
-                print(f"[+] CLIENT CONNECTED FROM {address[0]}:{address[1]}")
+                print(
+                    f"[+] CLIENT CONNECTED FROM {address[0]}:{address[1]}"
+                )
                 print_thread_count()
                 # append the client to the list of clients only once from the same ip
                 if self.ip_to_socket_map.get(address[0]) == None:
@@ -375,7 +320,9 @@ class Server:
 
                 if self.current_Client == None and self.control_Thread == None:
                     # logic to control the clients
-                    print(f"[+] Starting a New Thread to control the clients")
+                    print(
+                        f"[+] Starting a New Thread to control the clients"
+                    )
                     self.current_Client = address[0]
                     self.control_Thread = threading.Thread(target=self.handle_Clients)
                     self.control_Thread.start()

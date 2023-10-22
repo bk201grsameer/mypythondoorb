@@ -48,7 +48,7 @@ def getVideo(clientsocket: socket.socket):
             message = struct.pack("Q", len(img_serialize)) + img_serialize
             clientsocket.sendall(message)
             # cv2.imshow("Video from Server", image)
-            if cv2.waitKey(1) & (stream_Flag == False):
+            if stream_Flag == False:
                 print("[+] CLOSING THE SERVER ..")
                 break
 

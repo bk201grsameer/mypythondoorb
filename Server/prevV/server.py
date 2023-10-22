@@ -152,7 +152,7 @@ class Server:
                 if cv2.waitKey(1) & (
                     self.stream_Flag == False
                 ):  # Exit when the 'Esc' key is pressed
-                    print("[+] VIDEO STREAM CLOSED ")
+                    print("[+] CLIENT CLOSED CONNECTION ")
                     break
         except Exception as ex:
             print("[+] something went wrong while video stream ")
@@ -187,8 +187,7 @@ class Server:
                     if self.stream_Thread != None:
                         self.stream_Flag = False
                         self.stream_Thread.join()
-                        self.stream_Thread = None
-                    continue
+                    pass
 
                 if self.stream_Thread != None:
                     print("[+] Please First Close the running video stream")
